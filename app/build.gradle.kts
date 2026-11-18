@@ -11,8 +11,8 @@ android {
         applicationId = "cat.smx.inventari"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     buildTypes {
@@ -41,6 +41,5 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    // Escáner QR nativo rápido (Google Code Scanner / ML Kit)
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
 }

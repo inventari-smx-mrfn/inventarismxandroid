@@ -21,6 +21,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
@@ -79,8 +82,30 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Contenedor raíz con WebView + botón flotante nativo de Escáner QR
-        val rootLayout = FrameLayout(this)
+        // Evita que el WebView se meta debajo de la barra de estado, notch/cámara y barra de navegación
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        window.statusBarColor = Color.parseColor("#0F172A")
+        window.navigationBarColor = Color.parseColor("#0F172A")
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
+
+        val rootLayout = FrameLayout(this).apply {
+            setBackgroundColor(Color.parseColor("#0F172A"))
+            fitsSystemWindows = true
+        }
+
+        // Aplicar padding exacto según los WindowInsets del sistema (barra de estado + notch + gestos + teclado)
+        ViewCompat.setOnApplyWindowInsetsListener(rootLayout) { view, windowInsets ->
+            val insets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                WindowInsetsCompat.Type.displayCutout() or
+                WindowInsetsCompat.Type.ime()
+            )
+            view.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
 
         swipeRefresh = SwipeRefreshLayout(this)
         webView = WebView(this)
@@ -125,7 +150,7 @@ class MainActivity : AppCompatActivity() {
             mediaPlaybackRequiresUserGesture = false
             useWideViewPort = true
             loadWithOverviewMode = true
-            userAgentString = "$userAgentString InventariTIC-AndroidApp/1.1"
+            userAgentString = "$userAgentString InventariTIC-AndroidApp/1.2"
         }
 
         swipeRefresh.setColorSchemeColors(0xFF0284C7.toInt())
@@ -218,7 +243,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // Si venimos de escanear un QR fuera de la app (Deep Link), abrimos directamente esa ficha
         val initialUrl = resolverUrlDeIntent(intent) ?: baseUrl
         webView.loadUrl(initialUrl)
     }
